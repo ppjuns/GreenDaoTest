@@ -14,24 +14,17 @@ import org.greenrobot.greendao.annotation.Property;
 
 @Entity
 public class User {
-
-
     @Id
     private Long id;
-    @Property(nameInDb = "age")
-    private int age;
-    @Property(nameInDb = "username")
+   @Property(nameInDb = "username")
     private String userName;
     @Property(nameInDb = "password")
     private String passWord;
 
-    //唯一的@Unique
-//不为空@NotNull
-//不会持续话到数据库@Transient
-    @Generated(hash = 1049676854)
-    public User(Long id, int age, String userName, String passWord) {
+
+    @Generated(hash = 936445358)
+    public User(Long id, String userName, String passWord) {
         this.id = id;
-        this.age = age;
         this.userName = userName;
         this.passWord = passWord;
     }
@@ -65,11 +58,12 @@ public class User {
         this.passWord = passWord;
     }
 
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", userName='" + userName + '\'' +
+                ", passWord='" + passWord + '\'' +
+                '}';
     }
 }

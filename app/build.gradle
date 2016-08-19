@@ -18,8 +18,9 @@ android {
         }
     }
     greendao{
-        schemaVersion 2
+        schemaVersion 1
         targetGenDir 'src/main/java'
+        daoPackage    'com.ppjun.greendaotest.db'
     }
 }
 
