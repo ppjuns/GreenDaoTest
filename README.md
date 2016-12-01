@@ -1,6 +1,6 @@
-# GreenDaoTest
+# GreenDao
 GreenDao3.1.0使用案例包含（增删查改，升级数据库），3.+版本比2.+更加便捷生成DaoMaster和DaoSession
-
+[本文项目地址](https://github.com/gdmec07120731/GreenDaoTest)
 ##首先让你的android studio配置Greendao数据库
 在build.gradle目录下
 ```java
@@ -60,6 +60,7 @@ public class User {
 
 ##GreenDao使用
 
+如果遇到在生产包下找不到DaoMaster等文件，配置完上述代码要先Run一下。才开始下面代码。
 ```java
 public static final String DB_NAME = "ppjun.db";//数据库名称
 DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(context, DB_NAME, null);//实例化一个DevOpenhelper,相当于sqlit的SQliteOpenHelper
@@ -96,9 +97,9 @@ UserDao userDao =daoSession.getUserDao(); //获取UserDao实例来对表user进�
 
 ##下面来说GreenDao的升级数据库，在user表插入age
 
-修改schemaVersion 2
+1、修改build.gradle下面的schemaVersion 2
 
-user类
+2、在user类，新增age对象
 
 ```java
 public class User {
@@ -106,68 +107,31 @@ public class User {
     private Long id;
     @Property(nameInDb = "age")
     private int age;
-  ...
+  //generate getter and setter & toString
 }
 ```
     
 
-重写DBHelper类继承DaoMaster.OpenHelper 详细请看[GreenDao(2) ---- 数据库升级 onUpgrade](http://www.jianshu.com/p/e599a3b3aba5)
+
+
+3、你要新建一个类MyDBHelper继承DaoMaster.OpenHelper,在类的构造函数传入Context，super(context,DB_NAME,null);还要重写onUpgrade方法（注意这里的参数一是Database），然后创建表(传入true，这里使用IF NOT EXISTS)不用担心表不存在，还有执行增加age列sql语句 db.exeSQL("ALTER TABLE USER ADD COLUMN age");
 
 ```java
-public class DBHelper extends DaoMaster.OpenHelper {
-
-    private static final SortedMap<Integer, Migration> ALL_MIGRATIONS = new TreeMap<>();
-
-    {
-
-        ALL_MIGRATIONS.put(1, new V1Migration());
-    }
-
-    public DBHelper(Context context) {
-        super(context, GreenDaoUtils.DB_NAME, null);
+public class MyDBHelper extends DaoMaster.OpenHelper {
+    public MyDBHelper(Context context) {
+        super(context, DB_NAME,null);
     }
 
     @Override
-    public void onCreate(SQLiteDatabase db) {
-        super.onCreate(db);
-        executeMigrations(db, ALL_MIGRATIONS.keySet());
-    }
-
-    private void executeMigrations(SQLiteDatabase db, Set<Integer> integers) {
-        for (Integer version : integers) {
-            ALL_MIGRATIONS.get(version).migrate(db);
-        }
-    }
-
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    public void onUpgrade(Database db, int oldVersion, int newVersion) {
         super.onUpgrade(db, oldVersion, newVersion);
-        SortedMap<Integer, Migration> migrations = ALL_MIGRATIONS.subMap(oldVersion, newVersion);
-        executeMigrations(db, migrations.keySet());
-
+        NoteDao.createTable(db,true);
+        db.execSQL("ALTER TABLE NOTE ADD COLUMN age");
     }
 
-
-    public interface Migration {
-        void migrate(SQLiteDatabase db);
-
-
-    }
-
-    //新增列age，如果有多个操作写多个V1Migration，如V2Migration，并且调用ALL_MIGRATIONS.put
-    public class V1Migration implements Migration {
-
-        @Override
-        public void migrate(SQLiteDatabase db) {
-            db.execSQL("ALTER TABLE USER ADD COLUMN age");
-        }
-    }
 
 }
 ```
-
-
-
 
 
 这时候的DaoMaster.DevOpenHelper改为自定义DBHelper，这样子升级数据库就不会丢失原来的数据了
@@ -177,3 +141,5 @@ DBHelper dbHelper = new DBHelper(context);
 DaoMaster daoMaster = new DaoMaster(dbHelper.getWritableDb());
 ```
 
+
+[本文项目地址](https://github.com/gdmec07120731/GreenDaoTest)
